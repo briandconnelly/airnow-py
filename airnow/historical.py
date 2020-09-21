@@ -6,13 +6,17 @@ import os
 from airnow.api import get_airnow_data
 
 
-def get_conditions_zip(
-    zip_code: int, distance: int = 25, api_key: str = os.environ["AIRNOW_API_KEY"]
+def get_historical_zip(
+    zip_code: int,
+    date: str,
+    distance: int = 25,
+    api_key: str = os.environ["AIRNOW_API_KEY"],
 ) -> dict:
     """
-    Get current air quality conditions by ZIP code
+    Get historical air quality conditions for a given date by ZIP code
 
     :param int zip_code: A US ZIP code
+    :param str date: Date from which to get the forecast (default: today)
     :param int distance: If no reporting area exists for given ZIP code, search for nearby stations within this distance (default: 25; unit: miles)
     :param str api_key: AirNow API token
 
@@ -22,11 +26,12 @@ def get_conditions_zip(
     params = {
         "format": "application/json",
         "zipCode": zip_code,
+        "date": f"{date}T00-0000",
         "distance": distance,
     }
 
     cond = get_airnow_data(
-        url="http://www.airnowapi.org/aq/observation/zipCode/current/",
+        url="http://www.airnowapi.org/aq/observation/zipCode/historical/",
         params=params,
         format="application/json",
         api_key=api_key,
@@ -34,17 +39,19 @@ def get_conditions_zip(
     return json.loads(cond)
 
 
-def get_conditions_latlon(
+def get_historical_latlon(
     latitude: float,
     longitude: float,
+    date: str,
     distance: int = 25,
     api_key: str = os.environ["AIRNOW_API_KEY"],
 ) -> dict:
     """
-    Get current air quality conditions by latitude and longitude
+    Get historical air quality conditions for a given date by latitude and longitude
 
     :param float latitude: Latitude
     :param float longitude: Longitude
+    :param str date: Date from which to get the forecast (default: today)
     :param int distance: If no reporting area exists for given location, search for nearby stations within this distance (default: 25; unit: miles)
     :param str api_key: AirNow API token
 
@@ -54,12 +61,13 @@ def get_conditions_latlon(
     params = {
         "latitude": latitude,
         "longitude": longitude,
+        "date": f"{date}T00-0000",
         "distance": distance,
         "API_KEY": api_key,
     }
 
     cond = get_airnow_data(
-        url="http://www.airnowapi.org/aq/observation/latLong/current/",
+        url="http://www.airnowapi.org/aq/observation/latLong/historical/",
         params=params,
         format="application/json",
         api_key=api_key,
