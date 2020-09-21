@@ -3,6 +3,9 @@
 **airnow** is a Python package that provides access to the [AirNow](https://www.airnow.gov) [API](https://docs.airnowapi.org), which reports [air quality](https://docs.airnowapi.org/aq101) data throughout the United States.
 To use airnow, you will first need to create an API token by [signing up for an account](https://docs.airnowapi.org/account/request/).
 
+**Note:** AirNow measurements are updated hourly (generally between 10 and 30 past the hour).
+Please be kind to this free service and use caching and/or rate limiting.
+
 
 ## Installation
 
