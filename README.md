@@ -28,7 +28,7 @@ Let's get the current air quality conditions for Seattle, Washington (ZIP code 9
 ```py
 import airnow
 
-airnow.get_conditions_zip(98102)
+airnow.get_conditions_zip(98101)
 ```
 
 A dict is returned containing current ozone (O3) and [fine particulate matter](https://en.wikipedia.org/wiki/Particulates#Size,_shape_and_solubility_matter) (PM2.5) readings and associated metadata:
