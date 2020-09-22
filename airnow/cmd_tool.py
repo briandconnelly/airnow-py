@@ -9,6 +9,13 @@ from pathlib import Path
 import airnow
 
 __DEBUG__ = os.environ.get("AIRNOW_DEBUG", False)
+__DEBUG__ = True
+
+format_mimetypes = {
+    "csv": "text/csv",
+    "json": "application/json",
+    "xml": "application/xml",
+}
 
 
 def parse_arguments():
@@ -22,8 +29,8 @@ def parse_arguments():
         "-f",
         "--format",
         dest="format",
-        choices=["csv", "json", "pretty", "xml"],
-        default="pretty",
+        choices=["csv", "json", "xml"],
+        default="json",
         help="Output format",
     )
     parser.add_argument(
@@ -98,69 +105,83 @@ def parse_arguments():
 def run_cmdline():
     args = parse_arguments()
 
+    params = {
+        "zipCode": args.zip_code,
+        "latitude": args.latitude,
+        "longitude": args.longitude,
+        "distance": args.distance,
+    }
+
     if __DEBUG__:
         print("-" * 78)
         print("Command Line Arguments:")
         print(args)
         print("-" * 78)
+        print("\n")
 
     if args.command == "conditions":
         if args.zip_code is not None:
-            result = airnow.get_conditions_zip(
-                zip_code=args.zip_code, distance=args.distance, api_key=args.api_key
-            )
-            print(result)
+            params["latitude"] = None
+            params["longitude"] = None
+            loctype = "zipCode"
         elif args.latitude is not None and args.longitude is not None:
-            result = airnow.get_conditions_latlon(
-                latitude=args.latitude,
-                longitude=args.longitude,
-                distance=args.distance,
-                api_key=args.api_key,
-            )
-            print(result)
+            params["zip_code"] = None
+            loctype = "latLong"
         else:
             print("Error: must provide either ZIP code or latitude and longitude")
             return 1
+
+        result = airnow.api.get_airnow_data(
+            endpoint="/aq/observation/zipCode/current/",
+            params=params,
+            format=format_mimetypes[args.format],
+            api_key=args.api_key,
+        )
+        print(result)
 
     elif args.command == "forecast":
+        params["date"] = args.date
         if args.zip_code is not None:
-            result = airnow.get_forecast_zip(
-                zip_code=args.zip_code, date=args.date, distance=args.distance, api_key=args.api_key
-            )
-            print(result)
+            params["latitude"] = None
+            params["longitude"] = None
+            loctype = "zipCode"
         elif args.latitude is not None and args.longitude is not None:
-            result = airnow.get_forecast_latlon(
-                latitude=args.latitude,
-                longitude=args.longitude,
-                date=args.date,
-                distance=args.distance,
-                api_key=args.api_key,
-            )
-            print(result)
+            params["zip_code"] = None
+            loctype = "latLong"
         else:
             print("Error: must provide either ZIP code or latitude and longitude")
             return 1
 
+        result = airnow.api.get_airnow_data(
+            endpoint=f"/aq/forecast/{loctype}/",
+            params=params,
+            format=format_mimetypes[args.format],
+            api_key=args.api_key,
+        )
+        print(result)
+
     elif args.command == "historical":
+        params["date"] = args.date
         if args.zip_code is not None:
-            result = airnow.get_historical_zip(
-                zip_code=args.zip_code, date=args.date, distance=args.distance, api_key=args.api_key
-            )
-            print(result)
+            params["latitude"] = None
+            params["longitude"] = None
+            loctype = "zipCode"
         elif args.latitude is not None and args.longitude is not None:
-            result = airnow.get_historical_latlon(
-                latitude=args.latitude,
-                longitude=args.longitude,
-                date=args.date,
-                distance=args.distance,
-                api_key=args.api_key,
-            )
-            print(result)
+            params["zip_code"] = None
+            loctype = "latLong"
         else:
             print("Error: must provide either ZIP code or latitude and longitude")
             return 1
+
+        result = airnow.api.get_airnow_data(
+            endpoint="/aq/observation/{loctype}/historical/",
+            params=params,
+            format=format_mimetypes[args.format],
+            api_key=args.api_key,
+        )
+        print(result)
+
     else:
-        print("Must supply a command")
         return 99
 
 

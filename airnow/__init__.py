@@ -2,6 +2,7 @@
 
 __version__ = "0.1.0"
 
+from airnow.api import *
 from airnow.conditions import *
 from airnow.forecast import *
 from airnow.historical import *

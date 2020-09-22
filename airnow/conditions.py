@@ -26,7 +26,7 @@ def get_conditions_zip(
     }
 
     cond = get_airnow_data(
-        url="http://www.airnowapi.org/aq/observation/zipCode/current/",
+        endpoint="/aq/observation/zipCode/current/",
         params=params,
         format="application/json",
         api_key=api_key,
@@ -59,7 +59,7 @@ def get_conditions_latlon(
     }
 
     cond = get_airnow_data(
-        url="http://www.airnowapi.org/aq/observation/latLong/current/",
+        endpoint="/aq/observation/latLong/current/",
         params=params,
         format="application/json",
         api_key=api_key,
