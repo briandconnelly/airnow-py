@@ -26,14 +26,6 @@ def parse_arguments():
         epilog=f"To learn more about the commands and their options, see '{this_program} <command> --help'.",
     )
     parser.add_argument(
-        "-f",
-        "--format",
-        dest="format",
-        choices=["csv", "json", "xml"],
-        default="json",
-        help="Output format",
-    )
-    parser.add_argument(
         "-k",
         "--key",
         dest="api_key",
@@ -71,27 +63,37 @@ def parse_arguments():
         help="Target date for forecasts and historical observations (default: today)",
     )
 
+    format_parser = argparse.ArgumentParser(add_help=False)
+    format_parser.add_argument(
+        "-f",
+        "--format",
+        dest="format",
+        choices=["csv", "json", "xml"],
+        default="json",
+        help="Output format",
+    )
+
     subparsers = parser.add_subparsers(dest="command", title="commands")
 
     current_parser = subparsers.add_parser(
         "conditions",
         aliases=[],
         help="Retrieve current air quality conditions for a given location",
-        parents=[location_parser],
+        parents=[location_parser, format_parser],
     )
 
     forecast_parser = subparsers.add_parser(
         "forecast",
         aliases=[],
         help="Retrieve air quality forecast for a given location",
-        parents=[location_parser, date_parser],
+        parents=[location_parser, date_parser, format_parser],
     )
 
     historical_parser = subparsers.add_parser(
         "historical",
         aliases=[],
         help="Retrieve historical air quality observations for a given location",
-        parents=[location_parser, date_parser],
+        parents=[location_parser, date_parser, format_parser],
     )
 
     # Show help message and quit if no arguments given
