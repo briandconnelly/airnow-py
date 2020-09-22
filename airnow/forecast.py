@@ -25,17 +25,16 @@ def get_forecast_zip(
     """
 
     params = {
-        "format": "application/json",
         "zipCode": zip_code,
         "date": date,
         "distance": distance,
+        "format": "application/json",
+        "API_KEY": api_key,
     }
 
     forecast = get_airnow_data(
         endpoint="/aq/forecast/zipCode/",
         params=params,
-        format="application/json",
-        api_key=api_key,
     )
     return json.loads(forecast)
 
@@ -64,13 +63,12 @@ def get_forecast_latlon(
         "longitude": longitude,
         "date": date,
         "distance": distance,
+        "format": "application/json",
         "API_KEY": api_key,
     }
 
     forecast = get_airnow_data(
         endpoint="/aq/forecast/latLong/",
         params=params,
-        format="application/json",
-        api_key=api_key,
     )
     return json.loads(forecast)
