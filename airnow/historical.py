@@ -32,8 +32,7 @@ def get_historical_zip(
     }
 
     cond = get_airnow_data(
-        endpoint="/aq/observation/zipCode/historical/",
-        params=params,
+        endpoint="/aq/observation/zipCode/historical/", params=params,
     )
     return json.loads(cond)
 
@@ -67,8 +66,6 @@ def get_historical_latlon(
     }
 
     cond = get_airnow_data(
-        endpoint="/aq/observation/latLong/historical/",
-        params=params,
+        endpoint="/aq/observation/latLong/historical/", params=params,
     )
     return json.loads(cond)
-

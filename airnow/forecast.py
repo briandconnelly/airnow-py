@@ -32,10 +32,7 @@ def get_forecast_zip(
         "API_KEY": api_key,
     }
 
-    forecast = get_airnow_data(
-        endpoint="/aq/forecast/zipCode/",
-        params=params,
-    )
+    forecast = get_airnow_data(endpoint="/aq/forecast/zipCode/", params=params,)
     return json.loads(forecast)
 
 
@@ -67,8 +64,5 @@ def get_forecast_latlon(
         "API_KEY": api_key,
     }
 
-    forecast = get_airnow_data(
-        endpoint="/aq/forecast/latLong/",
-        params=params,
-    )
+    forecast = get_airnow_data(endpoint="/aq/forecast/latLong/", params=params,)
     return json.loads(forecast)
