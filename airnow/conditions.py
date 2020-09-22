@@ -26,7 +26,7 @@ def get_conditions_zip(
         "API_KEY": api_key,
     }
 
-    cond = get_airnow_data(endpoint="/aq/observation/zipCode/current/", params=params,)
+    cond = get_airnow_data(endpoint="/aq/observation/zipCode/current/", **params)
     return json.loads(cond)
 
 
@@ -55,5 +55,5 @@ def get_conditions_latlon(
         "API_KEY": api_key,
     }
 
-    cond = get_airnow_data(endpoint="/aq/observation/latLong/current/", params=params,)
+    cond = get_airnow_data(endpoint="/aq/observation/latLong/current/", **params)
     return json.loads(cond)

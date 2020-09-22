@@ -24,6 +24,7 @@ if __DEBUG__:
 else:
     logger.setLevel(logging.INFO)
 
+
 def parse_arguments():
     this_program = Path(sys.argv[0]).name
 
@@ -137,7 +138,7 @@ def run_cmdline():
         return 99
 
     params = vars(args)
-    #p2 = {k: params[k] for k in ("zipCode", "latitude", "longitude")}
+    # p2 = {k: params[k] for k in ("zipCode", "latitude", "longitude")}
 
     format_mimetypes = {
         "csv": "text/csv",
@@ -164,8 +165,7 @@ def run_cmdline():
 
     if args.command == "conditions":
         result = airnow.api.get_airnow_data(
-            endpoint="/aq/observation/zipCode/current/",
-            params=params,
+            endpoint="/aq/observation/zipCode/current/", **params,
         )
         print(result)
 
@@ -174,8 +174,7 @@ def run_cmdline():
         params["date"] = args.date
 
         result = airnow.api.get_airnow_data(
-            endpoint=f"/aq/forecast/{loctype}/",
-            params=params,
+            endpoint=f"/aq/forecast/{loctype}/", **params,
         )
         print(result)
 
@@ -184,8 +183,7 @@ def run_cmdline():
         params["date"] = args.date
 
         result = airnow.api.get_airnow_data(
-            endpoint="/aq/observation/{loctype}/historical/",
-            params=params,
+            endpoint="/aq/observation/{loctype}/historical/", **params,
         )
         print(result)
 
