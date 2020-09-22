@@ -17,7 +17,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-__DEBUG__ = not os.environ.get("AIRNOW_DEBUG", False)
+__DEBUG__ = os.environ.get("AIRNOW_DEBUG", True)
 
 if __DEBUG__:
     logger.setLevel(logging.DEBUG)
