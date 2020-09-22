@@ -153,13 +153,13 @@ def run_cmdline():
         print("-" * 78)
         print("\n")
 
+    status, loc_params, loctype = get_location(args)
+    if not status:
+        return 1
+
+    params.update(loc_params)
+
     if args.command == "conditions":
-        status, loc_params, loctype = get_location(args)
-        if not status:
-            return 1
-
-        params.update(loc_params)
-
         result = airnow.api.get_airnow_data(
             endpoint="/aq/observation/zipCode/current/",
             params=params,
@@ -170,12 +170,6 @@ def run_cmdline():
 
     elif args.command == "forecast":
         params["date"] = args.date
-        status, loc_params, loctype = get_location(args)
-        if not status:
-            return 1
-
-        params.update(loc_params)
-
         result = airnow.api.get_airnow_data(
             endpoint=f"/aq/forecast/{loctype}/",
             params=params,
@@ -186,12 +180,6 @@ def run_cmdline():
 
     elif args.command == "historical":
         params["date"] = args.date
-        status, loc_params, loctype = get_location(args)
-        if not status:
-            return 1
-
-        params.update(loc_params)
-
         result = airnow.api.get_airnow_data(
             endpoint="/aq/observation/{loctype}/historical/",
             params=params,
