@@ -116,7 +116,7 @@ def get_location(args):
     status = True
     loctype = None
 
-    if args.zip_code is not None:
+    if args.zipCode is not None:
         params["latitude"] = None
         params["longitude"] = None
         loctype = "zipCode"
