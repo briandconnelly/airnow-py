@@ -1,15 +1,28 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-from datetime import date
+import logging
 import os
 import sys
+
+from datetime import date
 from pathlib import Path
 
 import airnow
 
+logging.basicConfig(
+    format="-- [%(asctime)s][%(levelname)s][%(name)s] - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+logger = logging.getLogger(__name__)
+
 __DEBUG__ = os.environ.get("AIRNOW_DEBUG", False)
 
+if __DEBUG__:
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
 
 def parse_arguments():
     this_program = Path(sys.argv[0]).name
@@ -97,6 +110,25 @@ def parse_arguments():
     return args
 
 
+def get_location(args):
+
+    params = {}
+    status = True
+    loctype = None
+
+    if args.zip_code is not None:
+        params["latitude"] = None
+        params["longitude"] = None
+        loctype = "zipCode"
+    elif args.latitude is not None and args.longitude is not None:
+        params["zip_code"] = None
+        loctype = "latLong"
+    else:
+        logger.info("Error: must provide either ZIP code or latitude and longitude")
+        status = False
+    return status, params, loctype
+
+
 def run_cmdline():
     args = parse_arguments()
 
@@ -124,20 +156,13 @@ def run_cmdline():
         print("-" * 78)
         print("\n")
 
+    status, loc_params, loctype = get_location(args)
+    if not status:
+        return 1
+
+    params.update(loc_params)
+
     if args.command == "conditions":
-        del params["command"]
-
-        if args.zipCode is not None:
-            params["latitude"] = None
-            params["longitude"] = None
-            loctype = "zipCode"
-        elif args.latitude is not None and args.longitude is not None:
-            params["zipCode"] = None
-            loctype = "latLong"
-        else:
-            print("Error: must provide either ZIP code or latitude and longitude")
-            return 1
-
         result = airnow.api.get_airnow_data(
             endpoint="/aq/observation/zipCode/current/",
             params=params,
@@ -148,17 +173,6 @@ def run_cmdline():
         del params["command"]
         params["date"] = args.date
 
-        if args.zipCode is not None:
-            params["latitude"] = None
-            params["longitude"] = None
-            loctype = "zipCode"
-        elif args.latitude is not None and args.longitude is not None:
-            params["zipCode"] = None
-            loctype = "latLong"
-        else:
-            print("Error: must provide either ZIP code or latitude and longitude")
-            return 1
-
         result = airnow.api.get_airnow_data(
             endpoint=f"/aq/forecast/{loctype}/",
             params=params,
@@ -168,17 +182,6 @@ def run_cmdline():
     elif args.command == "historical":
         del params["command"]
         params["date"] = args.date
-
-        if args.zipCode is not None:
-            params["latitude"] = None
-            params["longitude"] = None
-            loctype = "zipCode"
-        elif args.latitude is not None and args.longitude is not None:
-            params["zipCode"] = None
-            loctype = "latLong"
-        else:
-            print("Error: must provide either ZIP code or latitude and longitude")
-            return 1
 
         result = airnow.api.get_airnow_data(
             endpoint="/aq/observation/{loctype}/historical/",
