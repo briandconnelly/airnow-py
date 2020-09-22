@@ -32,7 +32,7 @@ def get_forecast_zip(
     }
 
     forecast = get_airnow_data(
-        url="http://www.airnowapi.org/aq/forecast/zipCode/",
+        endpoint="/aq/forecast/zipCode/",
         params=params,
         format="application/json",
         api_key=api_key,
@@ -68,7 +68,7 @@ def get_forecast_latlon(
     }
 
     forecast = get_airnow_data(
-        url="http://www.airnowapi.org/aq/forecast/latLong/",
+        endpoint="/aq/forecast/latLong/",
         params=params,
         format="application/json",
         api_key=api_key,

@@ -30,6 +30,7 @@ setuptools.setup(
         "Topic :: Software Development :: Code Generators",
         "Topic :: Software Development :: Testing",
     ],
+    entry_points={"console_scripts": ["airnow=airnow.cmd_tool:run_cmdline"]},
     project_urls={
         "Bug Reports": f"{gh_url}/issues",
         "Source": gh_url,
