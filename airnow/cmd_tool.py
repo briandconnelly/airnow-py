@@ -17,19 +17,12 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-__DEBUG__ = os.environ.get("AIRNOW_DEBUG", True)
+__DEBUG__ = os.environ.get("AIRNOW_DEBUG", False)
 
 if __DEBUG__:
     logger.setLevel(logging.DEBUG)
 else:
     logger.setLevel(logging.INFO)
-
-format_mimetypes = {
-    "csv": "text/csv",
-    "json": "application/json",
-    "xml": "application/xml",
-}
-
 
 def parse_arguments():
     this_program = Path(sys.argv[0]).name
@@ -41,7 +34,7 @@ def parse_arguments():
     parser.add_argument(
         "-k",
         "--key",
-        dest="api_key",
+        dest="API_KEY",
         help="AirNow API token (default: AIRNOW_API_KEY)",
         default=os.environ.get("AIRNOW_API_KEY"),
     )
@@ -63,7 +56,7 @@ def parse_arguments():
         "-lon", "--longitude", dest="longitude", type=float, help="Target longitude"
     )
     location_parser.add_argument(
-        "-z", "--zip", dest="zip_code", type=int, help="Target ZIP code"
+        "-z", "--zip", dest="zipCode", type=int, help="Target ZIP code"
     )
 
     date_parser = argparse.ArgumentParser(add_help=False)
@@ -139,17 +132,27 @@ def get_location(args):
 def run_cmdline():
     args = parse_arguments()
 
-    params = {
-        "zipCode": args.zip_code,
-        "latitude": args.latitude,
-        "longitude": args.longitude,
-        "distance": args.distance,
+    # Quit with error if no command was given
+    if args.command is None:
+        return 99
+
+    params = vars(args)
+    #p2 = {k: params[k] for k in ("zipCode", "latitude", "longitude")}
+
+    format_mimetypes = {
+        "csv": "text/csv",
+        "json": "application/json",
+        "xml": "application/xml",
     }
+
+    params["format"] = format_mimetypes[params["format"]]
 
     if __DEBUG__:
         print("-" * 78)
         print("Command Line Arguments:")
         print(args)
+        print("-" * 78)
+        print(params)
         print("-" * 78)
         print("\n")
 
@@ -163,33 +166,28 @@ def run_cmdline():
         result = airnow.api.get_airnow_data(
             endpoint="/aq/observation/zipCode/current/",
             params=params,
-            format=format_mimetypes[args.format],
-            api_key=args.api_key,
         )
         print(result)
 
     elif args.command == "forecast":
+        del params["command"]
         params["date"] = args.date
+
         result = airnow.api.get_airnow_data(
             endpoint=f"/aq/forecast/{loctype}/",
             params=params,
-            format=format_mimetypes[args.format],
-            api_key=args.api_key,
         )
         print(result)
 
     elif args.command == "historical":
+        del params["command"]
         params["date"] = args.date
+
         result = airnow.api.get_airnow_data(
             endpoint="/aq/observation/{loctype}/historical/",
             params=params,
-            format=format_mimetypes[args.format],
-            api_key=args.api_key,
         )
         print(result)
-
-    else:
-        return 99
 
 
 if __name__ == "__main__":

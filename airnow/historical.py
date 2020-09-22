@@ -24,17 +24,15 @@ def get_historical_zip(
     """
 
     params = {
-        "format": "application/json",
         "zipCode": zip_code,
         "date": f"{date}T00-0000",
         "distance": distance,
+        "format": "application/json",
+        "API_KEY": api_key,
     }
 
     cond = get_airnow_data(
-        endpoint="/aq/observation/zipCode/historical/",
-        params=params,
-        format="application/json",
-        api_key=api_key,
+        endpoint="/aq/observation/zipCode/historical/", params=params,
     )
     return json.loads(cond)
 
@@ -63,13 +61,11 @@ def get_historical_latlon(
         "longitude": longitude,
         "date": f"{date}T00-0000",
         "distance": distance,
+        "format": "application/json",
         "API_KEY": api_key,
     }
 
     cond = get_airnow_data(
-        endpoint="/aq/observation/latLong/historical/",
-        params=params,
-        format="application/json",
-        api_key=api_key,
+        endpoint="/aq/observation/latLong/historical/", params=params,
     )
     return json.loads(cond)
