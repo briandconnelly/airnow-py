@@ -5,8 +5,11 @@ import logging
 import os
 import sys
 
+from argparse import ArgumentTypeError
 from datetime import date
 from pathlib import Path
+
+import dateutil.parser as date_parser
 
 import airnow
 
@@ -23,6 +26,87 @@ if __DEBUG__:
     logger.setLevel(logging.DEBUG)
 else:
     logger.setLevel(logging.INFO)
+
+
+def valid_iso_8601(dt_str):
+    """Validate date(time) string as ISO 8601 and return datetime object."""
+
+    try:
+        dt = date_parser.parse(dt_str)
+    except Exception as err:  # noqa: F841
+        raise ArgumentTypeError(f"Unable to parse date: {dt_str}")
+
+    if dt.tzinfo:
+        raise ArgumentTypeError("Date includes timezone info: {dt_str} - must be UTC")
+
+    return dt
+
+
+def construct_obs_monitoring_parser(obs_parser):
+
+    obs_parser.add_argument("min_x", type=float, help="Bounding box minimum latitude")
+    obs_parser.add_argument("min_y", type=float, help="Bounding box minimum longitude")
+    obs_parser.add_argument("max_y", type=float, help="Bounding box maximum latitude")
+    obs_parser.add_argument("max_x", type=float, help="Bounding box maximum longitude")
+
+    obs_parser.add_argument(
+        "-s",
+        "--start_date",
+        type=valid_iso_8601,
+        help="UTC start date - isoformat date string",
+    )
+    obs_parser.add_argument(
+        "-e",
+        "--end_date",
+        type=valid_iso_8601,
+        help="UTC end date - isoformat date string",
+    )
+
+    # TODO: enforce choosing at least 1 or set sensible default
+    # TODO: convert parameters -> comma sep list of short codes e.g. co,no2
+
+    obs_parser.add_argument("--o3", action="store_true", help="Parameters - Ozone")
+    obs_parser.add_argument("--pm25", action="store_true", help="Parameters - PM2.5")
+    obs_parser.add_argument("--pm10", action="store_true", help="Parameters - PM10")
+
+    obs_parser.add_argument("--co", action="store_true", help="Parameters - CO")
+    obs_parser.add_argument("--no2", action="store_true", help="Parameters - NO2")
+    obs_parser.add_argument("--so2", action="store_true", help="Parameters - SO2")
+
+    # datatype (a,b,c)
+    datatype_group = obs_parser.add_mutually_exclusive_group()
+    datatype_group.add_argument(
+        "-a", "--aqi", action="store_true", help="Datatype - enable AQI"
+    )
+    datatype_group.add_argument(
+        "-b",
+        "--both_datatypes",
+        action="store_true",
+        help="Datatype - enable both AQI & Concentrations",
+    )
+    datatype_group.add_argument(
+        "-c",
+        "--concentrations",
+        action="store_true",
+        help="Datatype - enable Concentrations",
+    )
+
+    # boolean options
+    obs_parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Provides additional site information including Site Name, Agency Name, AQS ID, and Full AQS ID",
+    )
+    obs_parser.add_argument(
+        "--nowcastonly",
+        action="store_true",
+        help="Aways provides Nowcast concentrations and AQI regardless of date/tim",
+    )
+    obs_parser.add_argument(
+        "--includerawconcentrations",
+        action="store_true",
+        help="Include an additional field that contains the raw concentration will be added to the output",
+    )
 
 
 def parse_arguments():
@@ -82,26 +166,35 @@ def parse_arguments():
 
     subparsers = parser.add_subparsers(dest="command", title="commands")
 
-    current_parser = subparsers.add_parser(
+    current_parser = subparsers.add_parser(  # noqa: F841
         "conditions",
         aliases=[],
         help="Retrieve current air quality conditions for a given location",
         parents=[location_parser, format_parser],
     )
 
-    forecast_parser = subparsers.add_parser(
+    forecast_parser = subparsers.add_parser(  # noqa: F841
         "forecast",
         aliases=[],
         help="Retrieve air quality forecast for a given location",
         parents=[location_parser, date_parser, format_parser],
     )
 
-    historical_parser = subparsers.add_parser(
+    historical_parser = subparsers.add_parser(  # noqa: F841
         "historical",
         aliases=[],
         help="Retrieve historical air quality observations for a given location",
         parents=[location_parser, date_parser, format_parser],
     )
+
+    obs_parser = subparsers.add_parser(
+        "observations",
+        aliases=[],
+        help="Retrieve AQI values or data concentrations for a specified date and time range and set of parameters within a geographic area of interest",
+        parents=[format_parser],
+    )
+
+    construct_obs_monitoring_parser(obs_parser)
 
     # Show help message and quit if no arguments given
     if len(sys.argv) <= 1:
