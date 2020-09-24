@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import dateutil.parser as date_parser
 import re
 
 
@@ -14,3 +15,17 @@ def validate_zip_code(x):
         raise ValueError(f"{x} is not a valid 5-decimal US ZIP code (e.g., '02133')")
 
     return x
+
+
+def validate_iso_8601(dt_str: str) -> str:
+    """Validate date(time) string as ISO 8601 and return datetime object."""
+
+    try:
+        dt = date_parser.parse(dt_str)
+    except Exception as err:  # noqa: F841
+        raise ValueError(f"Unable to parse date: {dt_str}")
+
+    if dt.tzinfo:
+        raise ValueError("Date includes timezone info: {dt_str} - must be UTC")
+
+    return dt.date().isoformat()

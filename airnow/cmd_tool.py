@@ -5,11 +5,8 @@ import logging
 import os
 import sys
 
-from argparse import ArgumentTypeError
 from datetime import date
 from pathlib import Path
-
-import dateutil.parser as date_parser
 
 import airnow
 
@@ -32,20 +29,6 @@ def bool_to_int(s: bool) -> int:
     if s:
         return 1
     return 0
-
-
-def valid_iso_8601(dt_str: str) -> str:
-    """Validate date(time) string as ISO 8601 and return datetime object."""
-
-    try:
-        dt = date_parser.parse(dt_str)
-    except Exception as err:  # noqa: F841
-        raise ArgumentTypeError(f"Unable to parse date: {dt_str}")
-
-    if dt.tzinfo:
-        raise ArgumentTypeError("Date includes timezone info: {dt_str} - must be UTC")
-
-    return dt.date().isoformat()
 
 
 def conform_obs_monitoring_args(args):
@@ -95,14 +78,14 @@ def construct_obs_monitoring_parser(obs_parser):
         "-s",
         "--start_date",
         dest="startdate",
-        type=valid_iso_8601,
+        type=airnow.validation.validate_iso_8601,
         help="UTC start date - isoformat date string",
     )
     obs_parser.add_argument(
         "-e",
         "--end_date",
         dest="enddate",
-        type=valid_iso_8601,
+        type=airnow.validation.validate_iso_8601,
         help="UTC end date - isoformat date string",
     )
 
@@ -187,7 +170,11 @@ def parse_arguments():
         "-lon", "--longitude", dest="longitude", type=float, help="Target longitude"
     )
     location_parser.add_argument(
-        "-z", "--zip", dest="zipCode", type=airnow.validation.validate_zip_code, help="Target ZIP code"
+        "-z",
+        "--zip",
+        dest="zipCode",
+        type=airnow.validation.validate_zip_code,
+        help="Target ZIP code",
     )
 
     date_parser = argparse.ArgumentParser(add_help=False)
@@ -195,7 +182,7 @@ def parse_arguments():
         "-D",
         "--date",
         dest="date",
-        type=valid_iso_8601,
+        type=airnow.validation.validate_iso_8601,
         default=date.today().isoformat(),
         help="Target date for forecasts and historical observations (default: today)",
     )
