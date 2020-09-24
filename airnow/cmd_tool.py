@@ -282,8 +282,6 @@ def run_cmdline():
         print("\n")
 
     if args.command == "observations":
-        logger.warn("Monitoring by Observation has not been ")
-
         params["unit"] = "ppb"
 
         # documentation incorrectly specifies datetime str format
