@@ -57,7 +57,7 @@ def parse_arguments():
         "-lon", "--longitude", dest="longitude", type=float, help="Target longitude"
     )
     location_parser.add_argument(
-        "-z", "--zip", dest="zipCode", type=int, help="Target ZIP code"
+        "-z", "--zip", dest="zipCode", type=airnow.validation.validate_zip_code, help="Target ZIP code"
     )
 
     date_parser = argparse.ArgumentParser(add_help=False)

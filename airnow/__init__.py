@@ -6,3 +6,5 @@ from airnow.api import *  # noqa: F401, F403
 from airnow.conditions import *  # noqa: F401, F403
 from airnow.forecast import *  # noqa: F401, F403
 from airnow.historical import *  # noqa: F401, F403
+
+import airnow.validation

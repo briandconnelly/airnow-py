@@ -8,7 +8,7 @@ from airnow.api import get_airnow_data
 
 
 def get_forecast_zip(
-    zip_code: int,
+    zip_code: str,
     date: str = date.today().isoformat(),
     distance: int = 25,
     api_key: str = os.environ["AIRNOW_API_KEY"],
@@ -16,7 +16,7 @@ def get_forecast_zip(
     """
     Get air quality forecast by ZIP code
 
-    :param int zip_code: A US ZIP code
+    :param str zip_code: A US ZIP code
     :param str date: Date from which to get the forecast (default: today)
     :param int distance: If no reporting area exists for given ZIP code, search for nearby stations within this distance (default: 25; unit: miles)
     :param str api_key: AirNow API token
