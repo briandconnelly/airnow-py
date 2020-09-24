@@ -16,7 +16,7 @@ def get_airnow_data(endpoint: str, **kwargs) -> dict:
     See the AirNow API documentation for parameter lists and descriptions.
     """
 
-    with requests.Session() as s:
+    with requests.Session() as s:  # noqa: F841
         result = requests.get(url=f"http://www.airnowapi.org{endpoint}", params=kwargs)
         logger.debug(result.url)
         return result.content.decode("UTF-8")
