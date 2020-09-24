@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import dateutil.parser as date_parser
 import re
 
@@ -17,7 +18,7 @@ def validate_zip_code(x):
     return x
 
 
-def validate_iso_8601(dt_str: str) -> str:
+def validate_iso_8601(dt_str: str) -> datetime.datetime:
     """Validate date(time) string as ISO 8601 and return datetime object."""
 
     try:
@@ -28,4 +29,4 @@ def validate_iso_8601(dt_str: str) -> str:
     if dt.tzinfo:
         raise ValueError("Date includes timezone info: {dt_str} - must be UTC")
 
-    return dt.date().isoformat()
+    return dt

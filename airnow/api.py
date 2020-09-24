@@ -3,7 +3,7 @@
 import logging
 import requests
 
-logger = logging.getLogger()
+logger = logging.getLogger("airnow")
 
 
 def get_airnow_data(endpoint: str, **kwargs) -> dict:

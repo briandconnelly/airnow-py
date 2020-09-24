@@ -1,28 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import logging
 import os
 import sys
 
 from datetime import date
 from pathlib import Path
 
+from . import cmd_logging
+
 import airnow
 
-logging.basicConfig(
-    format="-- [%(asctime)s][%(levelname)s][%(name)s] - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-
-logger = logging.getLogger(__name__)
+logger = cmd_logging.logger
 
 __DEBUG__ = os.environ.get("AIRNOW_DEBUG", False)
-
-if __DEBUG__:
-    logger.setLevel(logging.DEBUG)
-else:
-    logger.setLevel(logging.INFO)
 
 
 def bool_to_int(s: bool) -> int:
@@ -270,7 +261,6 @@ def run_cmdline():
 
     params = vars(args)
 
-    base_api_keys = {"API_KEY", "format"}
     format_mimetypes = {
         "csv": "text/csv",
         "json": "application/json",
@@ -278,6 +268,9 @@ def run_cmdline():
     }
 
     params["format"] = format_mimetypes[params["format"]]
+
+    if "date" in params:
+        params["date"] = params["date"].date().isoformat()
 
     if __DEBUG__:
 
@@ -289,25 +282,17 @@ def run_cmdline():
         print("\n")
 
     if args.command == "observations":
+        logger.warn("Monitoring by Observation has not been ")
 
-        cmd_keys = {
-            "bbox",
-            "startdate",
-            "enddate",
-            "parameters",
-            "datatype",
-            "verbose",
-            "nowcastonly",
-            "includerawconcentrations",
-        }
+        params["unit"] = "ppb"
 
-        cmd_params = {k: params[k] for k in base_api_keys if params[k]}
-        cmd_params.update({k: params[k] for k in cmd_keys if params[k]})
-        cmd_params["unit"] = "ppb"
-        cmd_params["startdate"] += "t00"
-        cmd_params["enddate"] += "t00"
+        # documentation incorrectly specifies datetime str format
+        # expected format example: 2020-09-01t00
+        for dt_key in ("startdate", "enddate"):
+            if dt_key in params:
+                params[dt_key] = params[dt_key].strftime("%y-%m-%dt%H")
 
-        result = airnow.api.get_airnow_data(endpoint="/aq/data/", **cmd_params,)
+        result = airnow.api.get_airnow_data(endpoint="/aq/data/", **params,)
         print(result)
     else:
         status, loc_params, loctype = get_location(args)
