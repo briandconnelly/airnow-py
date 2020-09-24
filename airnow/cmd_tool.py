@@ -34,7 +34,7 @@ def bool_to_int(s: bool) -> int:
     return 0
 
 
-def valid_iso_8601(dt_str):
+def valid_iso_8601(dt_str: str) -> str:
     """Validate date(time) string as ISO 8601 and return datetime object."""
 
     try:
@@ -45,7 +45,7 @@ def valid_iso_8601(dt_str):
     if dt.tzinfo:
         raise ArgumentTypeError("Date includes timezone info: {dt_str} - must be UTC")
 
-    return dt
+    return dt.date().isoformat()
 
 
 def conform_obs_monitoring_args(args):
@@ -71,12 +71,12 @@ def conform_obs_monitoring_args(args):
     bbox_args = ["min_x", "min_y", "max_x", "max_y"]
     args.bbox = ",".join((str(getattr(args, n)) for n in bbox_args))
 
-    # get datatype option (A|B|C)
+    # get datatype option (a|b|c)
     datatype = [s for s in "abc" if getattr(args, s)]
     if not datatype:
         datatype = ["b"]
 
-    args.datatype = datatype.pop().upper()
+    args.datatype = datatype.pop()
 
     # convert boolean args to ints
     args.verbose = bool_to_int(args.verbose)
@@ -195,7 +195,7 @@ def parse_arguments():
         "-D",
         "--date",
         dest="date",
-        type=str,
+        type=valid_iso_8601,
         default=date.today().isoformat(),
         help="Target date for forecasts and historical observations (default: today)",
     )
@@ -275,7 +275,6 @@ def get_location(args):
 
 def run_cmdline():
 
-    base_api_keys = {"api_key", "format"}
     args = parse_arguments()
 
     # Quit with error if no command was given
@@ -283,8 +282,8 @@ def run_cmdline():
         return 99
 
     params = vars(args)
-    # p2 = {k: params[k] for k in ("zipCode", "latitude", "longitude")}
 
+    base_api_keys = {"API_KEY", "format"}
     format_mimetypes = {
         "csv": "text/csv",
         "json": "application/json",
@@ -294,45 +293,15 @@ def run_cmdline():
     params["format"] = format_mimetypes[params["format"]]
 
     if __DEBUG__:
-        print("-" * 78)
-        print("Command Line Arguments:")
-        print(args)
-        print("-" * 78)
-        print(params)
-        print("-" * 78)
+
+        sep = "-" * 78
+        msg = ["Command Line Arguments:", args, params]
+        for line in msg:
+            print(line)
+            print(sep)
         print("\n")
 
-    status, loc_params, loctype = get_location(args)
-    if not status:
-        return 1
-
-    params.update(loc_params)
-
-    if args.command == "conditions":
-        result = airnow.api.get_airnow_data(
-            endpoint="/aq/observation/zipCode/current/", **params,
-        )
-        print(result)
-
-    elif args.command == "forecast":
-        del params["command"]
-        params["date"] = args.date
-
-        result = airnow.api.get_airnow_data(
-            endpoint=f"/aq/forecast/{loctype}/", **params,
-        )
-        print(result)
-
-    elif args.command == "historical":
-        del params["command"]
-        params["date"] = args.date
-
-        result = airnow.api.get_airnow_data(
-            endpoint=f"/aq/observation/{loctype}/historical/", **params,
-        )
-        print(result)
-
-    elif args.command == "observations":
+    if args.command == "observations":
 
         cmd_keys = {
             "bbox",
@@ -345,10 +314,44 @@ def run_cmdline():
             "includerawconcentrations",
         }
 
-        cmd_params = {k: params[k] for k in (cmd_keys | base_api_keys)}
+        cmd_params = {k: params[k] for k in base_api_keys if params[k]}
+        cmd_params.update({k: params[k] for k in cmd_keys if params[k]})
+        cmd_params["unit"] = "ppb"
+        cmd_params["startdate"] += "t00"
+        cmd_params["enddate"] += "t00"
 
         result = airnow.api.get_airnow_data(endpoint="/aq/data/", **cmd_params,)
         print(result)
+    else:
+        status, loc_params, loctype = get_location(args)
+        if not status:
+            return 1
+
+        params.update(loc_params)
+
+        if args.command == "conditions":
+            result = airnow.api.get_airnow_data(
+                endpoint="/aq/observation/zipCode/current/", **params,
+            )
+            print(result)
+
+        elif args.command == "forecast":
+            del params["command"]
+            params["date"] = args.date
+
+            result = airnow.api.get_airnow_data(
+                endpoint=f"/aq/forecast/{loctype}/", **params,
+            )
+            print(result)
+
+        elif args.command == "historical":
+            del params["command"]
+            params["date"] = args.date
+
+            result = airnow.api.get_airnow_data(
+                endpoint=f"/aq/observation/{loctype}/historical/", **params,
+            )
+            print(result)
 
 
 if __name__ == "__main__":

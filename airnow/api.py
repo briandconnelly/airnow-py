@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import requests
+
+logger = logging.getLogger()
 
 
 def get_airnow_data(endpoint: str, **kwargs) -> dict:
@@ -15,4 +18,5 @@ def get_airnow_data(endpoint: str, **kwargs) -> dict:
 
     with requests.Session() as s:
         result = requests.get(url=f"http://www.airnowapi.org{endpoint}", params=kwargs)
+        logger.debug(result.url)
         return result.content.decode("UTF-8")
