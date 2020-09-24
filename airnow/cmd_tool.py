@@ -28,6 +28,12 @@ else:
     logger.setLevel(logging.INFO)
 
 
+def bool_to_int(s: bool) -> int:
+    if s:
+        return 1
+    return 0
+
+
 def valid_iso_8601(dt_str):
     """Validate date(time) string as ISO 8601 and return datetime object."""
 
@@ -42,6 +48,42 @@ def valid_iso_8601(dt_str):
     return dt
 
 
+def conform_obs_monitoring_args(args):
+    """Collect and conform arg options to API compatible syntax."""
+
+    # collect pollutant(s) into comma separated list for `parameters` API input
+    pollutants = [
+        "o3",
+        "pm25",
+        "pm10",
+        "co",
+        "no2",
+        "so2",
+    ]
+
+    pollutant_parameter = [p for p in pollutants if getattr(args, p)]
+    if not pollutant_parameter:
+        pollutant_parameter.append("o3")
+
+    args.parameters = ",".join(pollutant_parameter)
+
+    # collect min/max lat-long into comma separated list for `bbox` API input
+    bbox_args = ["min_x", "min_y", "max_x", "max_y"]
+    args.bbox = ",".join((str(getattr(args, n)) for n in bbox_args))
+
+    # get datatype option (A|B|C)
+    datatype = [s for s in "abc" if getattr(args, s)]
+    if not datatype:
+        datatype = ["b"]
+
+    args.datatype = datatype.pop().upper()
+
+    # convert boolean args to ints
+    args.verbose = bool_to_int(args.verbose)
+    args.nowcastonly = bool_to_int(args.nowcastonly)
+    args.includerawconcentrations = bool_to_int(args.includerawconcentrations)
+
+
 def construct_obs_monitoring_parser(obs_parser):
 
     obs_parser.add_argument("min_x", type=float, help="Bounding box minimum latitude")
@@ -52,23 +94,21 @@ def construct_obs_monitoring_parser(obs_parser):
     obs_parser.add_argument(
         "-s",
         "--start_date",
+        dest="startdate",
         type=valid_iso_8601,
         help="UTC start date - isoformat date string",
     )
     obs_parser.add_argument(
         "-e",
         "--end_date",
+        dest="enddate",
         type=valid_iso_8601,
         help="UTC end date - isoformat date string",
     )
 
-    # TODO: enforce choosing at least 1 or set sensible default
-    # TODO: convert parameters -> comma sep list of short codes e.g. co,no2
-
     obs_parser.add_argument("--o3", action="store_true", help="Parameters - Ozone")
     obs_parser.add_argument("--pm25", action="store_true", help="Parameters - PM2.5")
     obs_parser.add_argument("--pm10", action="store_true", help="Parameters - PM10")
-
     obs_parser.add_argument("--co", action="store_true", help="Parameters - CO")
     obs_parser.add_argument("--no2", action="store_true", help="Parameters - NO2")
     obs_parser.add_argument("--so2", action="store_true", help="Parameters - SO2")
@@ -76,17 +116,19 @@ def construct_obs_monitoring_parser(obs_parser):
     # datatype (a,b,c)
     datatype_group = obs_parser.add_mutually_exclusive_group()
     datatype_group.add_argument(
-        "-a", "--aqi", action="store_true", help="Datatype - enable AQI"
+        "-a", "--aqi", dest="a", action="store_true", help="Datatype - enable AQI"
     )
     datatype_group.add_argument(
         "-b",
         "--both_datatypes",
+        dest="b",
         action="store_true",
         help="Datatype - enable both AQI & Concentrations",
     )
     datatype_group.add_argument(
         "-c",
         "--concentrations",
+        dest="c",
         action="store_true",
         help="Datatype - enable Concentrations",
     )
@@ -116,6 +158,10 @@ def parse_arguments():
         description="Retrieve air quality information from AirNow",
         epilog=f"To learn more about the commands and their options, see '{this_program} <command> --help'.",
     )
+
+    # params in observation by monitoring site
+    parser.set_defaults(parameters=None, bbox=None, datatype=None)
+
     parser.add_argument(
         "-k",
         "--key",
@@ -201,6 +247,10 @@ def parse_arguments():
         parser.print_help()
 
     args = parser.parse_args()
+
+    if args.command == "observations":
+        conform_obs_monitoring_args(args)
+
     return args
 
 
@@ -224,6 +274,8 @@ def get_location(args):
 
 
 def run_cmdline():
+
+    base_api_keys = {"api_key", "format"}
     args = parse_arguments()
 
     # Quit with error if no command was given
@@ -276,8 +328,26 @@ def run_cmdline():
         params["date"] = args.date
 
         result = airnow.api.get_airnow_data(
-            endpoint="/aq/observation/{loctype}/historical/", **params,
+            endpoint=f"/aq/observation/{loctype}/historical/", **params,
         )
+        print(result)
+
+    elif args.command == "observations":
+
+        cmd_keys = {
+            "bbox",
+            "startdate",
+            "enddate",
+            "parameters",
+            "datatype",
+            "verbose",
+            "nowcastonly",
+            "includerawconcentrations",
+        }
+
+        cmd_params = {k: params[k] for k in (cmd_keys | base_api_keys)}
+
+        result = airnow.api.get_airnow_data(endpoint="/aq/data/", **cmd_params,)
         print(result)
 
 
