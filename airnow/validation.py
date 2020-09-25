@@ -4,6 +4,8 @@ import datetime
 import dateutil.parser as date_parser
 import re
 
+from typing import Union
+
 
 def validate_zip_code(x):
     """Test whether a given value is a valid 5-decimal US ZIP code."""
@@ -32,13 +34,21 @@ def validate_iso_8601(dt_str: str) -> datetime.datetime:
     return dt
 
 
-def validate_latitude(n: float) -> float:
+def validate_latitude(n: Union[str, float]) -> float:
+
+    if isinstance(n, str):
+        n = float(n)
+
     if abs(n) > 90:
-        raise ValueError(f"Invalid latitude: {n}")
+        raise ValueError()
     return n
 
 
-def validate_longitude(n: float) -> float:
+def validate_longitude(n: Union[str, float]) -> float:
+
+    if isinstance(n, str):
+        n = float(n)
+
     if abs(n) > 180:
-        raise ValueError(f"Invalid longitude: {n}")
+        raise ValueError()
     return n

@@ -10,6 +10,7 @@ from pathlib import Path
 from . import cmd_logging
 
 import airnow
+from airnow import validation
 
 logger = cmd_logging.logger
 
@@ -60,23 +61,35 @@ def conform_obs_monitoring_args(args):
 
 def construct_obs_monitoring_parser(obs_parser):
 
-    obs_parser.add_argument("min_x", type=float, help="Bounding box minimum latitude")
-    obs_parser.add_argument("min_y", type=float, help="Bounding box minimum longitude")
-    obs_parser.add_argument("max_y", type=float, help="Bounding box maximum latitude")
-    obs_parser.add_argument("max_x", type=float, help="Bounding box maximum longitude")
+    obs_parser.add_argument(
+        "min_x", type=validation.validate_latitude, help="Bounding box minimum latitude"
+    )
+    obs_parser.add_argument(
+        "min_y",
+        type=validation.validate_longitude,
+        help="Bounding box minimum longitude",
+    )
+    obs_parser.add_argument(
+        "max_y", type=validation.validate_latitude, help="Bounding box maximum latitude"
+    )
+    obs_parser.add_argument(
+        "max_x",
+        type=validation.validate_longitude,
+        help="Bounding box maximum longitude",
+    )
 
     obs_parser.add_argument(
         "-s",
         "--start_date",
         dest="startdate",
-        type=airnow.validation.validate_iso_8601,
+        type=validation.validate_iso_8601,
         help="UTC start date - isoformat date string",
     )
     obs_parser.add_argument(
         "-e",
         "--end_date",
         dest="enddate",
-        type=airnow.validation.validate_iso_8601,
+        type=validation.validate_iso_8601,
         help="UTC end date - isoformat date string",
     )
 
@@ -155,16 +168,24 @@ def parse_arguments():
         help="Search distance in miles (default: 25)",
     )
     location_parser.add_argument(
-        "-lat", "--latitude", dest="latitude", type=float, help="Target latitude"
+        "-lat",
+        "--latitude",
+        dest="latitude",
+        type=validation.validate_latitude,
+        help="Target latitude",
     )
     location_parser.add_argument(
-        "-lon", "--longitude", dest="longitude", type=float, help="Target longitude"
+        "-lon",
+        "--longitude",
+        dest="longitude",
+        type=validation.validate_longitude,
+        help="Target longitude",
     )
     location_parser.add_argument(
         "-z",
         "--zip",
         dest="zipCode",
-        type=airnow.validation.validate_zip_code,
+        type=validation.validate_zip_code,
         help="Target ZIP code",
     )
 
@@ -173,7 +194,7 @@ def parse_arguments():
         "-D",
         "--date",
         dest="date",
-        type=airnow.validation.validate_iso_8601,
+        type=validation.validate_iso_8601,
         default=date.today().isoformat(),
         help="Target date for forecasts and historical observations (default: today)",
     )
