@@ -30,3 +30,15 @@ def validate_iso_8601(dt_str: str) -> datetime.datetime:
         raise ValueError("Date includes timezone info: {dt_str} - must be UTC")
 
     return dt
+
+
+def validate_latitude(n: float) -> float:
+    if abs(n) > 90:
+        raise ValueError(f"Invalid latitude: {n}")
+    return n
+
+
+def validate_longitude(n: float) -> float:
+    if abs(n) > 180:
+        raise ValueError(f"Invalid longitude: {n}")
+    return n

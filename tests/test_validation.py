@@ -44,3 +44,13 @@ def test__validate_iso_8601__tz_exception(dt_str):
 def test__validate_iso_8601__parse_exception(dt_str):
     with pytest.raises(ValueError):
         validation.validate_iso_8601(dt_str)
+
+
+@pytest.mark.parametrize("n", [0, -90, 90])
+def test__validate_latitude(n):
+    assert validation.validate_latitude(n) == n
+
+
+@pytest.mark.parametrize("n", [0, -180, 180])
+def test__validate_longitude(n):
+    assert validation.validate_longitude(n) == n
